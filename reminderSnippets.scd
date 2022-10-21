@@ -22,6 +22,8 @@ b = p.collect({|file|
 
 // thisProcess.nowExecutingPath returns the directory of the file that supercollider currently runs. 
 // 'entries' only returns the files in that folder. 'collect' returns an array of Buffer objects.
+// 'collect' acts similar to the javascript method '.map', performs an anonymous function on each 
+// element in the array.
 
 // Another way is to use 'File.getcwd' to get the current working directory. Still using PathName, but is
 // slightly more condensed. 
