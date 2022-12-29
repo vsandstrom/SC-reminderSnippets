@@ -59,6 +59,13 @@ b = p.collect({|file|
 // TEMPLATE MIDI SETUP
 // -------------------
 
+// Two MIDIFuncs are required to handle noteOn and noteOff.
+// If noteOff is not handled, there will be a hanging tone.
+// Since you cannot assume which note in a chord will be 
+// lifted first, a queue- or stack-structure cannot be used. 
+// A dictionary seems like the best solution if you do not 
+// want to create one synth per key on the midikeyboard.
+
 // run these first
 MIDIClient.init;
 MIDIIn.connectAll(true);
@@ -75,6 +82,7 @@ MIDIIn.connectAll(true);
     // Note ON
     // add synth to dictionary associated with its midi number
     m = MIDIFunc.new({| val, num, chan, src |
+        // Synth.new(\default, [\freq, num.midicps]);
         synthPolyfony = synthPolyfony.add(num -> Synth.new(\default, [\freq, num.midicps]));
     }, midiNum, midiChannel, midiMsgType[0], midiDeviceUID);
 
