@@ -53,3 +53,37 @@ b = p.collect({|file|
 (                 // will be repeated 3 times         // concatinated ending
     var pattern = [1.2, 0.3, 0.3, 0.3].dup(3).flat ++ [1.2, 0.6, 0.9, 0.3];
 )
+
+
+// -------------------
+// TEMPLATE MIDI SETUP
+// -------------------
+
+// run these first
+MIDIClient.init;
+MIDIIn.connectAll(true);
+
+(
+    var midiNum = nil;
+    var midiChannel = nil;
+    var midiMsgType = [\noteOn, \noteOff];
+    var midiDeviceUID = nil;
+
+    // many fingers
+    var synthPolyfony = Dictionary.new(20);
+
+    // Note ON
+    // add synth to dictionary associated with its midi number
+    m = MIDIFunc.new({| val, num, chan, src |
+        synthPolyfony = synthPolyfony.add(num -> Synth.new(\default, [\freq, num.midicps]));
+    }, midiNum, midiChannel, midiMsgType[0], midiDeviceUID);
+
+    // Note OFF
+    // free synth at midi number
+    n = MIDIFunc.new({| val, num, chan, src |
+        var synth = synthPolyfony.removeAt(num);
+        synth.free;
+    }, midiNum, midiChannel, midiMsgType[1], midiDeviceUID);
+)
+    
+
