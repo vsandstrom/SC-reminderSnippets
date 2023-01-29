@@ -95,3 +95,39 @@ MIDIIn.connectAll(true);
 )
     
 
+/// -----------------------------------------------------
+/// USING BUFFERS TO SAMPLE OUTPUT FOR GRANULAR SYNTHESIS
+/// -----------------------------------------------------
+
+// Two buffers are needed for use with a UGen like TGrains
+// Its not possible to index into a multichannel buffer
+~grainL = Buffer.alloc(s, 5 * s.options.sampleRate, 1);
+~grainR = Buffer.alloc(s, 5 * s.options.sampleRate, 1);
+
+(
+    // SynthDef could easily be written to write to two separate bbuffers
+    SynthDef(\bufWrite, {
+        var in = In.ar(\in.kr(0), 1);
+        BufWr.ar(
+            in,
+            \buf.kr(0),
+            Phasor.ar(
+                1, 
+                BufRateScale.kr(\buf.kr) * \rate.kr(1), 
+                0,
+                BufFrames.kr(\buf.kr)
+            )
+        );
+
+    }).add;
+)
+
+// The \in argument listens to the master bus [0, 1]
+Synth.new(\bufWrite, [\in, 0, \buf, ~grainL]);
+Synth.new(\bufWrite, [\in, 1, \buf, ~grainR]);
+
+// One could use the Phasor on the centerPos argument of the TGrains 
+// to trail the writing of the buffer and avoid unwanted artifacts
+{TGrains2.ar(2, Dust.kr(15), ~grainL, 1, 0.5, 0.1, 0, 0.2, 4)}.play;
+{TGrains2.ar(2, Dust.kr(15), ~grainR, 1, 0.5, 0.1, 0, 0.2, 4)}.play;
+
